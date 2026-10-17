@@ -1,5 +1,7 @@
 # 官方桌面端适配包（包名仍是 `dsh-pet`）
 
+> **📌 原创声明**：本适配包——适配层 `adapter/`、根 `package.json` + `cordis.patch.yml`、`vendor/` 同步与校验、本文档与 `tests/`——是 **zhuge886 的原创作品**；底座桌宠 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（作者 PC2005-cloud，MIT）署名完整保留。详见 [README.md](README.md) 的「📌 原创声明」。
+
 本仓库根目录现在是一个**可直接安装的 DSH 组合包（bundle）**，专门解决「dsh-pet 在 DeepSeek Harness 官方桌面端（Electron 版）装不上/装完不可管理」的问题（对应上游 issue #103）：
 
 > 在官方桌面版安装该插件时，提示「这个包没有声明组合包，不能作为插件管理」。
@@ -207,7 +209,7 @@ npm test          # manifest / 适配层纯逻辑 / 0.2.1-rc.1 boot 冒烟（无
 ```text
 启用失败: 1 entry did not activate dsh-pet (dsh-pet): failed to import:
 Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@electron/get' imported from
-…\dsh-pet-src\vendor\dsh-pet-0.3.7\lib\index.js
+…\<本仓库目录>\vendor\dsh-pet-0.3.7\lib\index.js
 ```
 
 适配包已把 `@electron/get` / `@electron-internal/extract-zip` 改成**按需加载**：激活不再失败，浏览器 overlay 正常出现；只有“桌面透明小窗”在缺依赖时降级。健康检查会给出 `runtime.downloadDependencies.missing`。
@@ -217,7 +219,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@electron/get' imported from
 1. 在插件目录安装两个运行依赖（推荐，之后首次启用会下载 Electron）：
 
    ```sh
-   cd <本仓库目录>            # 例如 dsh-pet-src
+   cd <本仓库目录>
    npm install --omit=peer
    ```
 

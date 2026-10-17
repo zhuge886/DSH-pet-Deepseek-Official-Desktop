@@ -4,11 +4,12 @@
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-pet?label=npm&color=blue"></a>
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="npm monthly downloads" src="https://img.shields.io/npm/dm/dsh-pet?label=%E6%9C%88%E4%B8%8B%E8%BD%BD&color=brightgreen"></a>
   <a href="https://www.npmjs.com/package/dsh-pet"><img alt="total downloads" src="https://img.shields.io/npm/dt/dsh-pet?label=%E6%80%BB%E4%B8%8B%E8%BD%BD&color=success"></a>
-  <a href="https://github.com/PC2005-cloud/dsh-pet"><img alt="stars" src="https://img.shields.io/github/stars/PC2005-cloud/dsh-pet?style=social"></a>
-  <a href="https://github.com/PC2005-cloud/dsh-pet/blob/main/LICENSE"><img alt="license" src="https://img.shields.io/github/license/PC2005-cloud/dsh-pet?color=orange"></a>
+  <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop"><img alt="stars" src="https://img.shields.io/github/stars/zhuge886/DSH-pet-Deepseek-Official-Desktop?style=social"></a>
+  <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop/blob/main/LICENSE"><img alt="license" src="https://img.shields.io/github/license/zhuge886/DSH-pet-Deepseek-Official-Desktop?color=orange"></a>
   <a href="https://awesome-dsh-plugin.com"><img alt="awesome dsh plugin" src="https://awesome-dsh-plugin.com/badge.svg"></a>
-  <a href="https://github.com/PC2005-cloud/dsh-pet"><img alt="repo size" src="https://img.shields.io/github/repo-size/PC2005-cloud/dsh-pet"></a>
-  <a href="https://github.com/PC2005-cloud/dsh-pet/issues"><img alt="issues" src="https://img.shields.io/github/issues/PC2005-cloud/dsh-pet"></a>
+  <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop"><img alt="repo size" src="https://img.shields.io/github/repo-size/zhuge886/DSH-pet-Deepseek-Official-Desktop"></a>
+  <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop/issues"><img alt="issues" src="https://img.shields.io/github/issues/zhuge886/DSH-pet-Deepseek-Official-Desktop"></a>
+  <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop"><img alt="original work" src="https://img.shields.io/badge/%E5%8E%9F%E5%88%9B-zhuge886-ff4d4f"></a>
   <img alt="platform" src="https://img.shields.io/badge/platform-DeepSeek%20Harness%20Web-8A2BE2">
   <img alt="assets" src="https://img.shields.io/badge/assets-dynamic%20animations-ff69b4">
 </p>
@@ -25,6 +26,12 @@ AI 生成动画的配方     源视频 → 透明动画的管线    运行在 DS
 任何人 clone 本仓库，都可以**从零生成自己的桌面宠物**——换角色、换动作、换风格，全流程可复现。
 
 ---
+
+## 📌 原创声明
+
+本仓库 **[zhuge886/DSH-pet-Deepseek-Official-Desktop](https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop)** 是 **zhuge886 的原创作品（Original Work）**：它作为「dsh-pet 官方桌面端适配发行版」，把桌宠适配进 DeepSeek Harness 官方桌面应用（Electron 版），其中**适配层**（`adapter/`：宿主识别、运行时诊断、只读健康检查、初始化失败降级）、**组合包声明**（根 `package.json` + `cordis.patch.yml`）、**上游产物同步与校验**（`vendor/`、`scripts/sync-vendor.mjs`）、**安装与兼容文档**（`DESKTOP.md`）和**测试**（`tests/`）均为作者原创设计、编写并发布；首次发布 **2026-10-17**，版本 **`v0.3.7-desktop.1`**。
+
+底座桌宠 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 由 **PC2005-cloud** 创作，以 MIT 许可开源。本仓库按 MIT 许可与上游「[二创约定](#许可)」原样内置其已构建产物，并**完整保留上游署名**——`vendor/` 内代码、素材与提示词的著作权仍归原作者，不因上段原创声明而改变。转载或二次分发本仓库时，请同时保留本仓库地址与上述上游地址。
 
 ## 快速开始（安装插件）
 
@@ -46,7 +53,7 @@ AI 生成动画的配方     源视频 → 透明动画的管线    运行在 DS
 
 ## 💬 反馈与发版节奏
 
-欢迎提 [issue](https://github.com/PC2005-cloud/dsh-pet/issues) 与 PR——bug、体验问题、优化想法都行。但动手前请先翻一眼 [提交记录](https://github.com/PC2005-cloud/dsh-pet/commits/main)，确认不是已经修掉的同款问题（有些问题可能已经在 `main` 上修好了，只是还没发版）。
+欢迎提 [issue](https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop/issues) 与 PR——bug、体验问题、优化想法都行。但动手前请先翻一眼 [提交记录](https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop/commits/main)，确认不是已经修掉的同款问题（有些问题可能已经在 `main` 上修好了，只是还没发版）。
 
 - **小修不单独发版**：不影响使用的小 bug 与优化会**累计**到下一个版本一起发，避免版本更迭过于频繁。所以「`main` 上已经修了」不等于「你装的这版已经包含」——`latest` 没更新时，以 `main` 的提交记录为准。
 - **想立刻用上未发布的修复**：按上面的「从源码安装」把插件指向本地仓库即可；注意**宿主半侧**的代码改动要**重开 DSH** 才生效（浏览器半侧刷新页面即可）。

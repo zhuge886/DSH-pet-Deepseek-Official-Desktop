@@ -59,7 +59,7 @@ info:
 
 externalDocs:
   description: 项目仓库与使用说明
-  url: https://github.com/PC2005-cloud/dsh-pet
+  url: https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop
 
 servers:
   - url: http://127.0.0.1:{port}
