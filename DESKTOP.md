@@ -1,6 +1,6 @@
 # 官方桌面端适配包（包名仍是 `dsh-pet`）
 
-> **📌 原创声明**：本适配包——适配层 `adapter/`、根 `package.json` + `cordis.patch.yml`、`vendor/` 同步与校验、本文档与 `tests/`——是 **zhuge886 的原创作品**；底座桌宠 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（作者 PC2005-cloud，MIT）署名完整保留。详见 [README.md](README.md) 的「📌 原创声明」。
+> **📌 原创与二创声明**：本适配包是 **zhuge886 基于上游 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（作者 PC2005-cloud，MIT）的原创二创**——适配层 `adapter/`、根 `package.json` + `cordis.patch.yml`、`vendor/` 同步与校验、本文档与 `tests/` 均为 zhuge886 原创实现，上游署名完整保留。详见 [README.md](README.md) 的「📌 原创与二创声明」。
 
 本仓库根目录现在是一个**可直接安装的 DSH 组合包（bundle）**，专门解决「dsh-pet 在 DeepSeek Harness 官方桌面端（Electron 版）装不上/装完不可管理」的问题（对应上游 issue #103）：
 

@@ -9,7 +9,7 @@
   <a href="https://awesome-dsh-plugin.com"><img alt="awesome dsh plugin" src="https://awesome-dsh-plugin.com/badge.svg"></a>
   <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop"><img alt="repo size" src="https://img.shields.io/github/repo-size/zhuge886/DSH-pet-Deepseek-Official-Desktop"></a>
   <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop/issues"><img alt="issues" src="https://img.shields.io/github/issues/zhuge886/DSH-pet-Deepseek-Official-Desktop"></a>
-  <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop"><img alt="original work" src="https://img.shields.io/badge/%E5%8E%9F%E5%88%9B-zhuge886-ff4d4f"></a>
+  <a href="https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop"><img alt="derivative work: based on dsh-pet" src="https://img.shields.io/badge/%E4%BA%8C%E5%88%9B-zhuge886-d73a49"></a>
   <img alt="platform" src="https://img.shields.io/badge/platform-DeepSeek%20Harness%20Web-8A2BE2">
   <img alt="assets" src="https://img.shields.io/badge/assets-dynamic%20animations-ff69b4">
 </p>
@@ -27,11 +27,11 @@ AI 生成动画的配方     源视频 → 透明动画的管线    运行在 DS
 
 ---
 
-## 📌 原创声明
+## 📌 原创与二创声明
 
-本仓库 **[zhuge886/DSH-pet-Deepseek-Official-Desktop](https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop)** 是 **zhuge886 的原创作品（Original Work）**：它作为「dsh-pet 官方桌面端适配发行版」，把桌宠适配进 DeepSeek Harness 官方桌面应用（Electron 版），其中**适配层**（`adapter/`：宿主识别、运行时诊断、只读健康检查、初始化失败降级）、**组合包声明**（根 `package.json` + `cordis.patch.yml`）、**上游产物同步与校验**（`vendor/`、`scripts/sync-vendor.mjs`）、**安装与兼容文档**（`DESKTOP.md`）和**测试**（`tests/`）均为作者原创设计、编写并发布；首次发布 **2026-10-17**，版本 **`v0.3.7-desktop.1`**。
+本仓库 **[zhuge886/DSH-pet-Deepseek-Official-Desktop](https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop)** 是 **zhuge886 基于上游 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的原创二创作品（derivative work）**：上游桌宠本体（插件实现、动画素材与提示词）由 **PC2005-cloud** 创作，以 MIT 许可开源；本仓库在其之上二次创作出「dsh-pet 官方桌面端适配发行版」，把桌宠适配进 DeepSeek Harness 官方桌面应用（Electron 版），其中**适配层**（`adapter/`：宿主识别、运行时诊断、只读健康检查、初始化失败降级）、**组合包声明**（根 `package.json` + `cordis.patch.yml`）、**上游产物同步与校验**（`vendor/`、`scripts/sync-vendor.mjs`）、**安装与兼容文档**（`DESKTOP.md`）和**测试**（`tests/`）均为 zhuge886 原创实现；首次发布 **2026-10-17**，版本 **`v0.3.7-desktop.1`**。
 
-底座桌宠 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 由 **PC2005-cloud** 创作，以 MIT 许可开源。本仓库按 MIT 许可与上游「[二创约定](#许可)」原样内置其已构建产物，并**完整保留上游署名**——`vendor/` 内代码、素材与提示词的著作权仍归原作者，不因上段原创声明而改变。转载或二次分发本仓库时，请同时保留本仓库地址与上述上游地址。
+按上游 MIT 许可与「[二创约定](#许可)」，本仓库在 README、仓库简介、Release 说明与 `vendor/` 内**完整保留上游署名与地址**（<https://github.com/PC2005-cloud/dsh-pet>）；`vendor/` 内代码、动画素材与提示词的著作权仍归原作者，不因本二创声明而改变。转载或二次分发本仓库时，请同时保留本仓库地址与上述上游地址。
 
 ## 快速开始（安装插件）
 
