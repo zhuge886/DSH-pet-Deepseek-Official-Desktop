@@ -473,7 +473,7 @@ async function generateWith$1(ctx, llm, sel, system, meme) {
 		messages: [createUserMessage({
 			content: [{
 				type: "text",
-				text: meme ? userTextWithMeme(meme) : USER_TEXT
+				text: (meme ? userTextWithMeme(meme) : USER_TEXT) + timeHintNow()
 			}],
 			source: { kind: "user" }
 		})],
@@ -1606,6 +1606,12 @@ const SEASON_AFTER = 3;
 function pad2(n) {
 	return String(n).padStart(2, "0");
 }
+/** [适配] 生成指令里的「当前时段」提示：比 system 的背景描述更直接，模型更愿意遵守 */
+function timeHintNow() {
+	const now = new Date();
+	const hour = now.getHours();
+	return "（现在是" + timeSlotOf(hour) + " " + pad2(hour) + ":" + pad2(now.getMinutes()) + "，这句话要符合这个时段：深夜/晚上别问中午吃什么，早上别聊晚饭。）";
+}
 function timeSlotOf(hour) {
 	for (const [start, slot] of SLOTS) if (hour >= start) return slot;
 	return "凌晨";
@@ -1989,7 +1995,7 @@ function timeContextOf(date) {
 	const day = date.getDay();
 	const hour = date.getHours();
 	const holiday = holidayClauseOf(date);
-	return "【当下】现在是" + date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日" + (WEEKDAYS[day] ?? "星期?") + " " + pad2(hour) + ":" + pad2(date.getMinutes()) + "，" + timeSlotOf(hour) + "，" + dayKindOf(day) + (holiday ? "，" + holiday : "") + "。这只是背景，不必刻意报时，也别句句都提节日——多数时候正常说话就好，真贴切时才顺口带一句。";
+	return "【当下】现在是" + date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日" + (WEEKDAYS[day] ?? "星期?") + " " + pad2(hour) + ":" + pad2(date.getMinutes()) + "，" + timeSlotOf(hour) + "，" + dayKindOf(day) + (holiday ? "，" + holiday : "") + "。这只是背景，不必刻意报时，也别句句都提节日；但**内容必须合乎当前时段**——现在是" + timeSlotOf(hour) + "，不要提其它时段才发生的事（例如深夜别问「中午吃什么」、早上别聊晚饭）。多数时候正常说话就好，真贴切时才顺口带一句。";
 }
 
 //#endregion

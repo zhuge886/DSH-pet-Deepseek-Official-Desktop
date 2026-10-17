@@ -87,6 +87,9 @@ test('vendor 产物与 manifest 一致，补丁锚点与懒加载改造齐全', 
     'activity-renderer-wire',
     'activity-client-helper',
     'activity-client-chain',
+    'time-hint-helper',
+    'time-context-rule',
+    'whisper-time-hint',
   ]);
   const springPatchedFiles = ['lib/client.js', 'runtime/electron-helper/shared-core.js'];
   for (const file of springPatchedFiles) {
@@ -103,6 +106,9 @@ test('vendor 产物与 manifest 一致，补丁锚点与懒加载改造齐全', 
   assert.ok(preload.includes('onMouseActivity(cb)'), 'preload 未暴露 onMouseActivity');
   const renderer = await readFile(join(vendorDir, 'runtime/electron-helper/renderer.js'), 'utf8');
   assert.ok(renderer.includes('S.markMouseActivity()'), '渲染端未订阅鼠标活动');
+  assert.ok(lib.includes('function timeHintNow()'), '缺时段提示生成器');
+  assert.ok(lib.includes('内容必须合乎当前时段'), 'system 时间背景缺时段约束');
+  assert.ok(lib.includes('+ timeHintNow()'), '碎碎念指令未追加时段提示');
 });
 
 test('浏览器半边的模块 id 与包名一致', async () => {

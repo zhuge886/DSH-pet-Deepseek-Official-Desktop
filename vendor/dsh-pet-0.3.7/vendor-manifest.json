@@ -103,12 +103,33 @@
       "reason": "浏览器待机链：鼠标在动时强制走「动作」分类",
       "search": "const k = rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });",
       "replace": "const k = activityActionDue() ? \"action\" : rollKind(…)"
+    },
+    {
+      "name": "time-hint-helper",
+      "file": "lib/index.js",
+      "reason": "碎碎念指令带上「现在是几点/哪个时段」，模型对紧邻指令权重更高",
+      "search": "function timeSlotOf(hour) {",
+      "replace": "（前置 timeHintNow()）"
+    },
+    {
+      "name": "time-context-rule",
+      "file": "lib/index.js",
+      "reason": "system 的时间背景补硬约束：内容必须合乎当前时段（深夜别问中午吃什么）",
+      "search": "。这只是背景，不必刻意报时，也别句句都提节日——多数时候正常说话就好，真贴切时才顺口带一句。",
+      "replace": "（追加时段约束句）"
+    },
+    {
+      "name": "whisper-time-hint",
+      "file": "lib/index.js",
+      "reason": "碎碎念用户指令末尾追加当前时段提示",
+      "search": "text: meme ? userTextWithMeme(meme) : USER_TEXT",
+      "replace": "text: (meme ? userTextWithMeme(meme) : USER_TEXT) + timeHintNow()"
     }
   ],
   "removed": [],
   "files": {
     "lib/client.js": "c91da87781f47c7c86d8c90bf5e1a6f50a9ec99664a5314925b583c0d258b60e",
-    "lib/index.js": "0887e05bd976fca2639dca652217f5593964839f62b8972098c3f8fc58baa300",
+    "lib/index.js": "0759c1abff6190c681984545c7ed9ec1acd7a798248ebb7b500e0f8d3f19d6cd",
     "LICENSE": "22757dc9c895b2729a2fc684d227cadfb54d5af3dd300029926839e8c4e269ce",
     "package.json": "949e5a2715d77bb63db8b13d22cd8cdfe9d214897debb7d9b1c682f254ddb246",
     "runtime/electron-helper/constants.js": "31ee2ad0741c1e125682820343591ee1d13ad3d747dfde6f9d3f08eaf413574c",

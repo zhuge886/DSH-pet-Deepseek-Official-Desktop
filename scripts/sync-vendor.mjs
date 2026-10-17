@@ -274,6 +274,32 @@ await applyFilePatch(
   '\t\t\t// 鼠标在动（用户在用电脑）→ 强制抽一段「动作」分类（节流 18~28 秒）\n\t\t\tconst k = activityActionDue() ? "action" : rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });',
 );
 
+// ---------- 时段感知：晚上不许说「中午吃什么」 ----------
+// 上游 0.3.7 已经把【当下】日期/时刻/时段写进 system，但“随便说一句日常碎碎念”这种泛指令会让模型
+// 忽略它（实测深夜仍会蹦出「中午吃啥」）。这里做两件事：
+//   1. system 里的背景行补一句硬约束：内容必须合乎当前时段；
+//   2. 碎碎念的**用户指令**里直接带上「现在是亥时/深夜 23:26」，模型对紧邻指令的权重更高。
+const timeHintHelper = `/** [适配] 生成指令里的「当前时段」提示：比 system 的背景描述更直接，模型更愿意遵守 */
+function timeHintNow() {
+	const now = new Date();
+	const hour = now.getHours();
+	return "（现在是" + timeSlotOf(hour) + " " + pad2(hour) + ":" + pad2(now.getMinutes()) + "，这句话要符合这个时段：深夜/晚上别问中午吃什么，早上别聊晚饭。）";
+}
+`;
+// 注意：lib/index.js 走内存里的 `lib` 变量（applyPatch），末尾统一落盘——
+// 用 applyFilePatch 会被后面的 writeFile 覆盖掉。
+applyPatch('time-hint-helper', 'function timeSlotOf(hour) {', timeHintHelper + 'function timeSlotOf(hour) {');
+applyPatch(
+  'time-context-rule',
+  '。这只是背景，不必刻意报时，也别句句都提节日——多数时候正常说话就好，真贴切时才顺口带一句。',
+  '。这只是背景，不必刻意报时，也别句句都提节日；但**内容必须合乎当前时段**——现在是" + timeSlotOf(hour) + "，不要提其它时段才发生的事（例如深夜别问「中午吃什么」、早上别聊晚饭）。多数时候正常说话就好，真贴切时才顺口带一句。',
+);
+applyPatch(
+  'whisper-time-hint',
+  'text: meme ? userTextWithMeme(meme) : USER_TEXT',
+  'text: (meme ? userTextWithMeme(meme) : USER_TEXT) + timeHintNow()',
+);
+
 await writeFile(libPath, lib, 'utf8');
 
 const resolvedAssetRoot = resolve(dirname(libPath), '../../../dsh-pet');
@@ -310,6 +336,9 @@ const manifest = {
     { name: 'activity-renderer-wire', file: 'runtime/electron-helper/renderer.js', reason: '把主进程活动心跳接到共享逻辑 markMouseActivity', search: 'injectAssets();', replace: '（追加 onMouseActivity 订阅）' },
     { name: 'activity-client-helper', file: 'lib/client.js', reason: '浏览器 overlay 同款鼠标活动判定（window pointermove）', search: 'const rollKind = (roll, w, opts) => {', replace: '（前置 ACTIVITY_* / activityActionDue）' },
     { name: 'activity-client-chain', file: 'lib/client.js', reason: '浏览器待机链：鼠标在动时强制走「动作」分类', search: 'const k = rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });', replace: 'const k = activityActionDue() ? "action" : rollKind(…)' },
+    { name: 'time-hint-helper', file: 'lib/index.js', reason: '碎碎念指令带上「现在是几点/哪个时段」，模型对紧邻指令权重更高', search: 'function timeSlotOf(hour) {', replace: '（前置 timeHintNow()）' },
+    { name: 'time-context-rule', file: 'lib/index.js', reason: 'system 的时间背景补硬约束：内容必须合乎当前时段（深夜别问中午吃什么）', search: '。这只是背景，不必刻意报时，也别句句都提节日——多数时候正常说话就好，真贴切时才顺口带一句。', replace: '（追加时段约束句）' },
+    { name: 'whisper-time-hint', file: 'lib/index.js', reason: '碎碎念用户指令末尾追加当前时段提示', search: 'text: meme ? userTextWithMeme(meme) : USER_TEXT', replace: 'text: (meme ? userTextWithMeme(meme) : USER_TEXT) + timeHintNow()' },
   ],
   removed: [],
   files,
@@ -339,7 +368,10 @@ const patches = `# 内置上游构建产物（只读）
    **强制**抽一段「动作」分类播放（像在陪着干活）；鼠标静下来就退回原有权重抽签。
    桌面 helper 的穿透小窗收不到窗外鼠标移动，故由主进程按全局光标判定（250ms 限流）经 IPC
    通知渲染端；浏览器 overlay 直接监听 \`window pointermove\`。只影响随机链，拖拽/点播/事件动画不变。
-5. 只保留运行所需文件：\`lib/index.js\`、\`lib/client.js\`、\`runtime/\`、\`package.json\`、\`LICENSE\`；
+5. **时段感知（碎碎念/对话）**：上游已把【当下】日期/时刻/时段写进 system，但泛指令下模型常忽略
+   （实测深夜仍会说「中午吃啥」）。适配版两处加固：system 的背景行补一句硬约束「内容必须合乎当前
+   时段」，碎碎念的**用户指令**末尾直接带「现在是深夜 23:26，这句话要符合这个时段」。
+6. 只保留运行所需文件：\`lib/index.js\`、\`lib/client.js\`、\`runtime/\`、\`package.json\`、\`LICENSE\`；
    类型声明与独立模式 CLI 不随适配包发布。
 
 校验值见 \`vendor-manifest.json\`（逐文件 SHA-256）。

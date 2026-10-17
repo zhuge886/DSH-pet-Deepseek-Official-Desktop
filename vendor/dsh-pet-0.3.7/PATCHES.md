@@ -21,7 +21,10 @@
    **强制**抽一段「动作」分类播放（像在陪着干活）；鼠标静下来就退回原有权重抽签。
    桌面 helper 的穿透小窗收不到窗外鼠标移动，故由主进程按全局光标判定（250ms 限流）经 IPC
    通知渲染端；浏览器 overlay 直接监听 `window pointermove`。只影响随机链，拖拽/点播/事件动画不变。
-5. 只保留运行所需文件：`lib/index.js`、`lib/client.js`、`runtime/`、`package.json`、`LICENSE`；
+5. **时段感知（碎碎念/对话）**：上游已把【当下】日期/时刻/时段写进 system，但泛指令下模型常忽略
+   （实测深夜仍会说「中午吃啥」）。适配版两处加固：system 的背景行补一句硬约束「内容必须合乎当前
+   时段」，碎碎念的**用户指令**末尾直接带「现在是深夜 23:26，这句话要符合这个时段」。
+6. 只保留运行所需文件：`lib/index.js`、`lib/client.js`、`runtime/`、`package.json`、`LICENSE`；
    类型声明与独立模式 CLI 不随适配包发布。
 
 校验值见 `vendor-manifest.json`（逐文件 SHA-256）。
