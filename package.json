@@ -1,0 +1,94 @@
+{
+  "name": "dsh-pet",
+  "version": "0.3.7-desktop.1",
+  "description": "吃白饭的蓝色大肥鱼，赖在 DeepSeek Harness 里不走了。本包是 dsh-pet 的【官方桌面端适配发行版】：仓库根即插件包，免构建、可在桌面应用「插件管理」里从本仓库直接安装。",
+  "icon": "dsh-pet/assets/logo.png",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "desktop",
+    "electron",
+    "desktop-pet",
+    "pet",
+    "cordis"
+  ],
+  "homepage": "https://github.com/PC2005-cloud/dsh-pet#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PC2005-cloud/dsh-pet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PC2005-cloud/dsh-pet/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./adapter/host.js",
+  "exports": {
+    ".": "./adapter/host.js",
+    "./client": "./vendor/dsh-pet-0.3.7/lib/client.js",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "adapter",
+    "cordis.patch.yml",
+    "dsh-pet/assets/config.jsonc",
+    "dsh-pet/assets/fonts",
+    "dsh-pet/assets/logo.png",
+    "dsh-pet/assets/memes",
+    "dsh-pet/assets/pic",
+    "dsh-pet/assets/webm",
+    "vendor/dsh-pet-0.3.7",
+    "DESKTOP.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/",
+    "sync:upstream": "node scripts/sync-vendor.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@electron-internal/extract-zip": "^1.0.5",
+    "@electron/get": "^5.1.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/dsh-agent-default-model": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-client-connection": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-commands": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-credentials": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-home-paths": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-host-webserver": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "@deepseek-ai/dsh-llm": "^0.2.0-rc.1 || ^0.2.1-rc.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-connection"
+      ],
+      "platform": "web"
+    },
+    "compatibility": {
+      "dshReleases": {
+        "0.1.7-rc.2": "incompatible",
+        "0.2.0-rc.1": "compatible",
+        "0.2.0-rc.2": "compatible",
+        "0.2.1-rc.1": "compatible"
+      }
+    },
+    "desktopAdapter": {
+      "upstreamVersion": "0.3.7",
+      "entry": "./adapter/host.js"
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "upstream": {
+    "name": "dsh-pet",
+    "version": "0.3.7",
+    "tarball": "https://registry.npmjs.org/dsh-pet/-/dsh-pet-0.3.7.tgz",
+    "integrity": "sha512-friEaCrHBLVHmOmlQl2rmco8pGn/K2NnTHsqRtARjnPA1sZp0p5SCXRR9ZcN4oGDxHxz3a/YCNW6MCFAJtkocg=="
+  },
+  "patches": [
+    {
+      "name": "asset-root",
+      "file": "lib/index.js",
+      "reason": "素材根指向仓库 dsh-pet/assets，避免 54MB webm 重复入库",
+      "search": "const PACKAGE_ROOT = resolve(fileURLToPath(new URL(\"..\", import.meta.url)));",
+      "replace": "const PACKAGE_ROOT = resolve(fileURLToPath(new URL(\"../../../dsh-pet/\", import.meta.url)));"
+    },
+    {
+      "name": "lazy-download-loaders",
+      "file": "lib/index.js",
+      "reason": "Electron 下载依赖改为按需加载",
+      "search": "async function ensureElectronDownload(options = {}) {",
+      "replace": "（前置 loadElectronDownloader / loadZipExtractor）"
+    },
+    {
+      "name": "drop-static-electron-import",
+      "file": "lib/index.js",
+      "reason": "顶层 @electron/get import 会让 link: 安装缺依赖时整个插件激活失败",
+      "search": "import { downloadArtifact } from \"@electron/get\";\n",
+      "replace": ""
+    },
+    {
+      "name": "drop-dynamic-zip-import",
+      "file": "lib/index.js",
+      "reason": "解压器改为 loadZipExtractor()，与下载器一起做缺依赖提示",
+      "search": "\t\t\tconst { default: extract } = await import(\"@electron-internal/extract-zip\");\n",
+      "replace": ""
+    }
+  ],
+  "removed": [],
+  "files": {
+    "lib/client.js": "80e4b37a5e9d62400176e97cac9efa0ba5af22e33e05d922b427bb1044a00e7b",
+    "lib/index.js": "0887e05bd976fca2639dca652217f5593964839f62b8972098c3f8fc58baa300",
+    "LICENSE": "22757dc9c895b2729a2fc684d227cadfb54d5af3dd300029926839e8c4e269ce",
+    "package.json": "949e5a2715d77bb63db8b13d22cd8cdfe9d214897debb7d9b1c682f254ddb246",
+    "runtime/electron-helper/constants.js": "31ee2ad0741c1e125682820343591ee1d13ad3d747dfde6f9d3f08eaf413574c",
+    "runtime/electron-helper/desktop-geometry.js": "c367be61368b0ba21f778fb359989b4496e7c42b62d59294f5491ab0586df3a5",
+    "runtime/electron-helper/dpi-linearization.js": "c781cdfb115186ef42ddafe70099edfd25586c24bb8b3371c599afb94792181c",
+    "runtime/electron-helper/events.js": "6e2aeaccb0bf90d051b5df9f7fed27fd17ea5bd01cb6bf0eec1d3a166a05e8bf",
+    "runtime/electron-helper/host-liveness.js": "6cb68274436cbcfda99f2f991f929f8c2db596153081b107549f13d72b64c3cf",
+    "runtime/electron-helper/index.html": "c705ed22e31d92be3bee8423015fed5f0307ec699763384280714601cb30d710",
+    "runtime/electron-helper/main.js": "309267b013dc1d56a408f6b16d762c2a21de3985c5daf1c64a9b1b049be5ff81",
+    "runtime/electron-helper/package.json": "8cf1275c9a520d92c4e997b7e28074de9881c6394522c6ca15d0fc84cd8c7ca1",
+    "runtime/electron-helper/pointer-target.js": "a299faccfda23365a22e54ee93147c19874abae6c669fc90b9f4b6c9d3b8c150",
+    "runtime/electron-helper/preload.js": "55f9e0166eaff8096d22e291c1589d41dc1e9effa1e35e9b155fd85931cd01ce",
+    "runtime/electron-helper/renderer.js": "819aab206d2c7e5d7d88e5b40085e8f092e60f1b168f72ee1f29f27e4291e4c9",
+    "runtime/electron-helper/shared-core.js": "c9c8b555001a8246effa15b80ecb20ba09633e9195b15bc6146272b6f0f77459",
+    "runtime/electron-helper/sprite.js": "c26741a10277ad741587f933eaea692a7b8bffa2c65357a255569c39ac48ad19",
+    "runtime/electron-helper/topmost-watchdog.js": "4585dafb6527e06307092d569c806d5a1372754415c5abc5da38c1571a869e09"
+  }
+}

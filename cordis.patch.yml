@@ -1,0 +1,27 @@
+# ============================================================================
+# dsh-pet 官方桌面端适配发行版 —— bundle patch
+# ============================================================================
+#
+# 本文件让「仓库根」成为 DSH 的合法组合包（bundle）：
+#   - 官方桌面应用「插件管理 → 添加插件」填入本仓库地址后，Host 读到
+#     package.json 的 dsh.bundle.patch，能把它识别为可管理的插件；
+#   - insert 的 entry 指向包名本身（`dsh-pet`），Node 解析到 package.json
+#     的 exports["."] → adapter/host.js（适配层），再由适配层转调
+#     vendor/dsh-pet-0.3.7/lib/index.js（上游 0.3.7 已构建宿主半边）；
+#   - 浏览器半边由 package.json 的 dsh.client 声明，exports["./client"]
+#     直接指向同一份上游构建产物（模块 id 与包名一致，均为 dsh-pet）。
+#
+# 约定（与 DSH STORE 上架契约一致）：
+#   - entry id 全局唯一，且与包名一致；
+#   - "id:" 那一行后面不能写行尾注释（商城预检用正则抓值）。
+# ============================================================================
+
+- insert:
+    - id: dsh-pet
+      name: 'dsh-pet'
+      config:
+        desktopAdapter:
+          # true = 上游初始化失败时只记录日志/健康检查暴露，不让整个 profile 启动失败
+          resilient: true
+          # true = 注册 /dsh-pet-desktop/health 只读诊断接口
+          healthRoute: true
