@@ -1028,6 +1028,27 @@ const trimTrail = (trail, now) => {
 	while (i < trail.length && trail[i].t < cutoff) i++;
 	return i === 0 ? trail : trail.slice(i);
 };
+// ---------- [适配] 鼠标活动 → 待机链主动加动作 ----------
+// 用户在动鼠标（在电脑前忙）时，随机链每 18~28 秒强制抽一段「动作」分类；鼠标静下来就退回原权重。
+// 只影响随机链，拖拽/点播/事件动画不变。桌面端由主进程经 IPC 喂 markMouseActivity。
+const ACTIVITY_WINDOW_MS = 2500;
+const ACTIVITY_COOLDOWN_MIN_MS = 18000;
+const ACTIVITY_COOLDOWN_MAX_MS = 28000;
+let lastMouseActivityAt = 0;
+let nextActivityActionAt = 0;
+const markMouseActivity = () => {
+	lastMouseActivityAt = Date.now();
+};
+if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+	window.addEventListener("pointermove", markMouseActivity, { passive: true });
+}
+const activityActionDue = () => {
+	const now = Date.now();
+	if (now - lastMouseActivityAt > ACTIVITY_WINDOW_MS) return false;
+	if (now < nextActivityActionAt) return false;
+	nextActivityActionAt = now + ACTIVITY_COOLDOWN_MIN_MS + Math.random() * (ACTIVITY_COOLDOWN_MAX_MS - ACTIVITY_COOLDOWN_MIN_MS);
+	return true;
+};
 const springStep = (v, x, target, dt, power = DEFAULT_THROW_POWER) => v + ((target - x) * SPRING_K - v * SPRING_C) * power * dt;
 const softClampSpeed = (speed) => {
 	if (speed <= 0) return 0;
@@ -1670,6 +1691,8 @@ exports.screenOfBox = screenOfBox
 exports.sendChat = sendChat
 exports.slotIncludes = slotIncludes
 exports.spawnScoreBurst = spawnScoreBurst
+exports.activityActionDue = activityActionDue
+exports.markMouseActivity = markMouseActivity
 exports.springStep = springStep
 exports.squashScale = squashScale
 exports.takeChanged = takeChanged

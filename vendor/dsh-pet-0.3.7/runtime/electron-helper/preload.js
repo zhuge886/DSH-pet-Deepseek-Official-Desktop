@@ -52,6 +52,10 @@ contextBridge.exposeInMainWorld('petBridge', {
   },
   // 显示器热更新：分辨率/缩放变化、插拔屏、旋转后主进程重算桌面几何并推来
   // （{hull, areas, primaryIndex}，屏幕坐标）——渲染端就地重挂视口与边界。
+  // [适配] 鼠标活动（主进程按全局光标判定、250ms 限流）→ 待机链主动加动作
+  onMouseActivity(cb) {
+    ipcRenderer.on('pet:mouse-activity', () => cb());
+  },
   onDisplays(cb) {
     ipcRenderer.on('pet:displays', (e, geo) => cb(geo));
   },

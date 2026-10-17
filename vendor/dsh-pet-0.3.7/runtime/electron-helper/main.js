@@ -469,6 +469,19 @@ function createPetWindows() {
       const ignoring = windowIgnore.get(win.id) !== false;
       const busy = inputBusy.get(win.id) === true;
       const point = screen.getCursorScreenPoint();
+      // [适配] 鼠标活动上报：全局光标相对上次上报位移 >= 3px 且距上次 >= 250ms 才发一条，
+      // 渲染端据此在待机链里「每 18~28 秒主动加一段动作」。穿透小窗收不到窗外 mousemove，
+      // 所以只能由主进程按屏幕坐标判定。
+      {
+        const nowMs = Date.now();
+        const last = win.__dshPetActivity || (win.__dshPetActivity = { at: 0, x: point.x, y: point.y });
+        if (nowMs - last.at >= 250 && Math.abs(point.x - last.x) + Math.abs(point.y - last.y) >= 3) {
+          last.at = nowMs;
+          last.x = point.x;
+          last.y = point.y;
+          win.webContents.send('pet:mouse-activity');
+        }
+      }
       // 余量区停留计时：只在"非 busy 且在余量区"时累加，离开余量区即清零；busy 期间不累加。
       const zone = pointerZone(b, point);
       const nextMs = !busy && zone === 'margin' ? (offBodyMs.get(win.id) ?? 0) + POINTER_POLL_MS : 0;

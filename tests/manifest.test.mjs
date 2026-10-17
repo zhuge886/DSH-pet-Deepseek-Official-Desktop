@@ -79,13 +79,30 @@ test('vendor 产物与 manifest 一致，补丁锚点与懒加载改造齐全', 
     'drop-dynamic-zip-import',
     'drag-follow-stiffness-client',
     'drag-follow-stiffness-desktop',
+    'activity-shared-helper',
+    'activity-shared-export',
+    'activity-sprite-chain',
+    'activity-main-ipc',
+    'activity-preload-ipc',
+    'activity-renderer-wire',
+    'activity-client-helper',
+    'activity-client-chain',
   ]);
   const springPatchedFiles = ['lib/client.js', 'runtime/electron-helper/shared-core.js'];
   for (const file of springPatchedFiles) {
     const source = await readFile(join(vendorDir, file), 'utf8');
     assert.ok(source.includes('const SPRING_K = 800;'), `${file} 的拖拽跟随刚度未生效`);
     assert.ok(source.includes('const SPRING_C = 50;'), `${file} 的拖拽跟随阻尼未生效`);
+    assert.ok(source.includes('const activityActionDue = () =>'), `${file} 的鼠标活动判定缺失`);
   }
+  const sprite = await readFile(join(vendorDir, 'runtime/electron-helper/sprite.js'), 'utf8');
+  assert.ok(sprite.includes("S.activityActionDue() ? 'action' :"), '桌面待机链未接入鼠标活动');
+  const main = await readFile(join(vendorDir, 'runtime/electron-helper/main.js'), 'utf8');
+  assert.ok(main.includes("win.webContents.send('pet:mouse-activity')"), '主进程鼠标活动心跳缺失');
+  const preload = await readFile(join(vendorDir, 'runtime/electron-helper/preload.js'), 'utf8');
+  assert.ok(preload.includes('onMouseActivity(cb)'), 'preload 未暴露 onMouseActivity');
+  const renderer = await readFile(join(vendorDir, 'runtime/electron-helper/renderer.js'), 'utf8');
+  assert.ok(renderer.includes('S.markMouseActivity()'), '渲染端未订阅鼠标活动');
 });
 
 test('浏览器半边的模块 id 与包名一致', async () => {

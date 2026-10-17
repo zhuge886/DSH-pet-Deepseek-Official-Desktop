@@ -439,7 +439,8 @@ class PetSprite {
     const roll = Math.random();
     // 宠物固定（pets[].fixedEnabled）：掷骰时把「转向 / 移动」两档权重按 0 算（与浏览器同一份
     // 决策）——随机链不再让宠物自己翻朝向或走开。右键菜单点播与 /anim 接口不走这里，不受影响。
-    const k = S.rollKind(roll, animationWeights, { fixed: this.pet.fixedEnabled });
+    // 鼠标在动（用户在用电脑）→ 强制抽一段「动作」分类（节流 18~28 秒，见 shared-core）
+    const k = S.activityActionDue() ? 'action' : S.rollKind(roll, animationWeights, { fixed: this.pet.fixedEnabled });
     let next;
     if (k === 'idle') {
       next = S.pick(animations.idle, this.anim);

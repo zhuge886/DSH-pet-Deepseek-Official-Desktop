@@ -47,11 +47,67 @@
       "reason": "同上，桌面透明小窗拖拽跟随更跟手",
       "search": "const SPRING_K = 200;\nconst SPRING_C = 30;",
       "replace": "const SPRING_K = 800;\nconst SPRING_C = 50;"
+    },
+    {
+      "name": "activity-shared-helper",
+      "file": "runtime/electron-helper/shared-core.js",
+      "reason": "鼠标活动判定（2.5s 窗口 + 18~28s 冷却），供待机链主动加动作",
+      "search": "const springStep = (v, x, target, dt, power = DEFAULT_THROW_POWER) =>",
+      "replace": "（前置 ACTIVITY_* 常量 / markMouseActivity / activityActionDue）"
+    },
+    {
+      "name": "activity-shared-export",
+      "file": "runtime/electron-helper/shared-core.js",
+      "reason": "导出 activityActionDue / markMouseActivity 给 sprite 与 renderer",
+      "search": "exports.springStep = springStep",
+      "replace": "（新增两行导出）"
+    },
+    {
+      "name": "activity-sprite-chain",
+      "file": "runtime/electron-helper/sprite.js",
+      "reason": "桌面待机链：鼠标在动时强制走「动作」分类",
+      "search": "const k = S.rollKind(roll, animationWeights, { fixed: this.pet.fixedEnabled });",
+      "replace": "const k = S.activityActionDue() ? 'action' : S.rollKind(…)"
+    },
+    {
+      "name": "activity-main-ipc",
+      "file": "runtime/electron-helper/main.js",
+      "reason": "主进程按全局光标判定鼠标活动，250ms 限流后 IPC 通知窗口",
+      "search": "const point = screen.getCursorScreenPoint();",
+      "replace": "（追加活动心跳上报块）"
+    },
+    {
+      "name": "activity-preload-ipc",
+      "file": "runtime/electron-helper/preload.js",
+      "reason": "暴露 onMouseActivity(cb) 给渲染端",
+      "search": "onDisplays(cb) {",
+      "replace": "（前置 onMouseActivity）"
+    },
+    {
+      "name": "activity-renderer-wire",
+      "file": "runtime/electron-helper/renderer.js",
+      "reason": "把主进程活动心跳接到共享逻辑 markMouseActivity",
+      "search": "injectAssets();",
+      "replace": "（追加 onMouseActivity 订阅）"
+    },
+    {
+      "name": "activity-client-helper",
+      "file": "lib/client.js",
+      "reason": "浏览器 overlay 同款鼠标活动判定（window pointermove）",
+      "search": "const rollKind = (roll, w, opts) => {",
+      "replace": "（前置 ACTIVITY_* / activityActionDue）"
+    },
+    {
+      "name": "activity-client-chain",
+      "file": "lib/client.js",
+      "reason": "浏览器待机链：鼠标在动时强制走「动作」分类",
+      "search": "const k = rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });",
+      "replace": "const k = activityActionDue() ? \"action\" : rollKind(…)"
     }
   ],
   "removed": [],
   "files": {
-    "lib/client.js": "6119672dbe950855e55a24b0727cf72def1a3292a7f0a07ad6958d6d03ddcfba",
+    "lib/client.js": "c91da87781f47c7c86d8c90bf5e1a6f50a9ec99664a5314925b583c0d258b60e",
     "lib/index.js": "0887e05bd976fca2639dca652217f5593964839f62b8972098c3f8fc58baa300",
     "LICENSE": "22757dc9c895b2729a2fc684d227cadfb54d5af3dd300029926839e8c4e269ce",
     "package.json": "949e5a2715d77bb63db8b13d22cd8cdfe9d214897debb7d9b1c682f254ddb246",
@@ -61,13 +117,13 @@
     "runtime/electron-helper/events.js": "6e2aeaccb0bf90d051b5df9f7fed27fd17ea5bd01cb6bf0eec1d3a166a05e8bf",
     "runtime/electron-helper/host-liveness.js": "6cb68274436cbcfda99f2f991f929f8c2db596153081b107549f13d72b64c3cf",
     "runtime/electron-helper/index.html": "c705ed22e31d92be3bee8423015fed5f0307ec699763384280714601cb30d710",
-    "runtime/electron-helper/main.js": "309267b013dc1d56a408f6b16d762c2a21de3985c5daf1c64a9b1b049be5ff81",
+    "runtime/electron-helper/main.js": "08926df6a44ed422c083adea162b0248b39c015424b53a8dfc5764563ef5a071",
     "runtime/electron-helper/package.json": "8cf1275c9a520d92c4e997b7e28074de9881c6394522c6ca15d0fc84cd8c7ca1",
     "runtime/electron-helper/pointer-target.js": "a299faccfda23365a22e54ee93147c19874abae6c669fc90b9f4b6c9d3b8c150",
-    "runtime/electron-helper/preload.js": "55f9e0166eaff8096d22e291c1589d41dc1e9effa1e35e9b155fd85931cd01ce",
-    "runtime/electron-helper/renderer.js": "819aab206d2c7e5d7d88e5b40085e8f092e60f1b168f72ee1f29f27e4291e4c9",
-    "runtime/electron-helper/shared-core.js": "fd7d3eb11ceef28e7e5c52b9748c1422604bb964a0a2340b45fe3962fc976f3a",
-    "runtime/electron-helper/sprite.js": "c26741a10277ad741587f933eaea692a7b8bffa2c65357a255569c39ac48ad19",
+    "runtime/electron-helper/preload.js": "0e7e70a526bd280b1c4a8ee805f9d619a6ff61cf4e12642908c63e7587065bec",
+    "runtime/electron-helper/renderer.js": "173e5efdf27d5ad86f61b6f59f976ca416155937c419c9d51c1718a4247c0e28",
+    "runtime/electron-helper/shared-core.js": "1872550eba5dc20fcef08e14bb266749ab51f328855116fcc209c3f3c9b65695",
+    "runtime/electron-helper/sprite.js": "d043009fe4b0f593542c16cef698dc75937f47726167d072648ad1a2bbeafd68",
     "runtime/electron-helper/topmost-watchdog.js": "4585dafb6527e06307092d569c806d5a1372754415c5abc5da38c1571a869e09"
   }
 }

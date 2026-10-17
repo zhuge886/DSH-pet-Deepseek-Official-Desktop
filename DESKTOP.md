@@ -250,6 +250,10 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@electron/get' imported from
 
 ## 11. 版本记录
 
+**`0.3.7-desktop.4`**（2026-10-17）
+
+- **鼠标在动 → 待机链主动加动作**：鼠标 2.5s 内动过时，待机随机链每 18~28 秒强制抽一段「动作」分类播放（像在陪着干活）；鼠标静下来就退回原有权重抽签。桌面 helper 的穿透小窗收不到窗外鼠标，改由主进程按**全局光标**判定（250ms 限流）经 IPC 通知渲染端；浏览器 overlay 直接监听 `window pointermove`。只影响随机链，拖拽/点播/事件动画不变。
+
 **`0.3.7-desktop.3`**（2026-10-17）
 
 - 默认只显示**一只**：打包默认配置的 `pets[0].display` 由 `both` 改为 `desktop`（仅窗口外透明小窗）。四档仍在、能力不变，设置页或配置文件随时可切回 `web` / `both`。
@@ -286,3 +290,21 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@electron/get' imported from
 - `$DSH_HOME/dsh-pet/main-config.jsonc` 里把 `"display"` 改成 `desktop` / `web` / `both` / `none`。
 
 > **桌面形态没有功能缺失**：右键菜单（打开网站 / 打开 DeepSeek Harness、查看余额、碎碎念、对话、回到初始位置、重载配置、动作点播）、拖拽甩抛、余额、碎碎念与对话、工作状态联动、系统通知、多开、pet pack 全部可用；`display` 只影响"在哪画"，不影响任何能力。
+
+---
+
+## 13. 鼠标在动时自动加动作（陪伴模式）
+
+用户在动鼠标（= 坐在电脑前忙）时，宠物不会只播待机呼吸，而是**每隔一会儿主动来一段「动作」**：
+
+| 项 | 值 | 说明 |
+| --- | --- | --- |
+| 活动窗口 | 2.5s | 鼠标 2.5s 内移动过才算"人在" |
+| 冷却 | 18~28s（随机） | 两次主动加动作的最小/最大间隔 |
+| 行为 | 强制 `action` 分支 | 跳过本轮 idle/turn/move 抽签，按分类权重抽一段「动作」 |
+| 合并方式 | 与现有待机链同一套 | 播完 → `ended` → 继续原来的随机链，不新增模式 |
+
+- 鼠标静下来超过 2.5s → 完全退回上游原有权重抽签（idle 10 / turn 5 / move 5 / 动作 80）。
+- 桌面 helper 的窗口是点击穿透小窗、收不到窗外 `mousemove`，所以由主进程按**全局光标**轮询判定（250ms 限流），经 `pet:mouse-activity` IPC 通知渲染端；浏览器 overlay 直接监听 `window pointermove`。
+- 只命中**随机链**：拖拽跟随、右键点播、余额/碎碎念/工作状态等事件动画完全不受影响。
+- 日志里能看到命中：`[dsh-pet] ... roll=... -> [小动作] 打哈欠`——分类名不是 `IDLE` / `TURN` / `MOVES` 即说明这次是主动加动作。

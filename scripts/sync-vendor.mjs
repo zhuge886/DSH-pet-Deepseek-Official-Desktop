@@ -179,6 +179,101 @@ await applyFilePatch(
   springReplace,
 );
 
+// ---------- 鼠标活动 → 待机链主动加动作（适配版优化） ----------
+// 用户还在动鼠标（= 坐在电脑前忙）时，待机随机链最多每 18~28 秒**强制**抽一段「动作」分类播一次，
+// 让宠物像在陪着干活；鼠标静下来超过 2.5s 就完全退回原有权重抽签。
+// 只影响随机链：拖拽跟随、右键点播、事件动画（余额/碎碎念/工作状态）与物理一律不变。
+// 桌面 helper 的窗口是点击穿透小窗、收不到窗外鼠标，所以主进程按**全局光标**轮询判定活动，
+// 经 IPC 通知渲染端；浏览器 overlay 直接用 window pointermove。
+const activityHelper = `// ---------- [适配] 鼠标活动 → 待机链主动加动作 ----------
+// 用户在动鼠标（在电脑前忙）时，随机链每 18~28 秒强制抽一段「动作」分类；鼠标静下来就退回原权重。
+// 只影响随机链，拖拽/点播/事件动画不变。桌面端由主进程经 IPC 喂 markMouseActivity。
+const ACTIVITY_WINDOW_MS = 2500;
+const ACTIVITY_COOLDOWN_MIN_MS = 18000;
+const ACTIVITY_COOLDOWN_MAX_MS = 28000;
+let lastMouseActivityAt = 0;
+let nextActivityActionAt = 0;
+const markMouseActivity = () => {
+	lastMouseActivityAt = Date.now();
+};
+if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+	window.addEventListener("pointermove", markMouseActivity, { passive: true });
+}
+const activityActionDue = () => {
+	const now = Date.now();
+	if (now - lastMouseActivityAt > ACTIVITY_WINDOW_MS) return false;
+	if (now < nextActivityActionAt) return false;
+	nextActivityActionAt = now + ACTIVITY_COOLDOWN_MIN_MS + Math.random() * (ACTIVITY_COOLDOWN_MAX_MS - ACTIVITY_COOLDOWN_MIN_MS);
+	return true;
+};
+`;
+const springStepSearch = 'const springStep = (v, x, target, dt, power = DEFAULT_THROW_POWER) =>';
+await applyFilePatch(
+  'activity-shared-helper',
+  'runtime/electron-helper/shared-core.js',
+  springStepSearch,
+  activityHelper + springStepSearch,
+);
+await applyFilePatch(
+  'activity-shared-export',
+  'runtime/electron-helper/shared-core.js',
+  'exports.springStep = springStep',
+  'exports.activityActionDue = activityActionDue\nexports.markMouseActivity = markMouseActivity\nexports.springStep = springStep',
+);
+await applyFilePatch(
+  'activity-sprite-chain',
+  'runtime/electron-helper/sprite.js',
+  '    const k = S.rollKind(roll, animationWeights, { fixed: this.pet.fixedEnabled });',
+  "    // 鼠标在动（用户在用电脑）→ 强制抽一段「动作」分类（节流 18~28 秒，见 shared-core）\n    const k = S.activityActionDue() ? 'action' : S.rollKind(roll, animationWeights, { fixed: this.pet.fixedEnabled });",
+);
+await applyFilePatch(
+  'activity-main-ipc',
+  'runtime/electron-helper/main.js',
+  '      const point = screen.getCursorScreenPoint();',
+  `      const point = screen.getCursorScreenPoint();
+      // [适配] 鼠标活动上报：全局光标相对上次上报位移 >= 3px 且距上次 >= 250ms 才发一条，
+      // 渲染端据此在待机链里「每 18~28 秒主动加一段动作」。穿透小窗收不到窗外 mousemove，
+      // 所以只能由主进程按屏幕坐标判定。
+      {
+        const nowMs = Date.now();
+        const last = win.__dshPetActivity || (win.__dshPetActivity = { at: 0, x: point.x, y: point.y });
+        if (nowMs - last.at >= 250 && Math.abs(point.x - last.x) + Math.abs(point.y - last.y) >= 3) {
+          last.at = nowMs;
+          last.x = point.x;
+          last.y = point.y;
+          win.webContents.send('pet:mouse-activity');
+        }
+      }`,
+);
+await applyFilePatch(
+  'activity-preload-ipc',
+  'runtime/electron-helper/preload.js',
+  '  onDisplays(cb) {',
+  `  // [适配] 鼠标活动（主进程按全局光标判定、250ms 限流）→ 待机链主动加动作
+  onMouseActivity(cb) {
+    ipcRenderer.on('pet:mouse-activity', () => cb());
+  },
+  onDisplays(cb) {`,
+);
+await applyFilePatch(
+  'activity-renderer-wire',
+  'runtime/electron-helper/renderer.js',
+  'injectAssets();',
+  `injectAssets();
+// [适配] 主进程的鼠标活动心跳 → 共享逻辑；待机链据此每 18~28 秒主动加一段动作
+if (window.petBridge && typeof window.petBridge.onMouseActivity === 'function') {
+  window.petBridge.onMouseActivity(() => S.markMouseActivity());
+}`,
+);
+const clientRollSearch = 'const rollKind = (roll, w, opts) => {';
+await applyFilePatch('activity-client-helper', 'lib/client.js', clientRollSearch, activityHelper + clientRollSearch);
+await applyFilePatch(
+  'activity-client-chain',
+  'lib/client.js',
+  '\t\t\tconst k = rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });',
+  '\t\t\t// 鼠标在动（用户在用电脑）→ 强制抽一段「动作」分类（节流 18~28 秒）\n\t\t\tconst k = activityActionDue() ? "action" : rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });',
+);
+
 await writeFile(libPath, lib, 'utf8');
 
 const resolvedAssetRoot = resolve(dirname(libPath), '../../../dsh-pet');
@@ -207,6 +302,14 @@ const manifest = {
     { name: 'drop-dynamic-zip-import', file: 'lib/index.js', reason: '解压器改为 loadZipExtractor()，与下载器一起做缺依赖提示', search: '\t\t\tconst { default: extract } = await import("@electron-internal/extract-zip");\n', replace: '' },
     { name: 'drag-follow-stiffness-client', file: 'lib/client.js', reason: '拖拽跟随弹簧 200/30 → 800/50：滞后 0.15v → 0.0625v，浏览器 overlay 拖拽更跟手（不改抛掷物理）', search: 'const SPRING_K = 200;\nconst SPRING_C = 30;', replace: 'const SPRING_K = 800;\nconst SPRING_C = 50;' },
     { name: 'drag-follow-stiffness-desktop', file: 'runtime/electron-helper/shared-core.js', reason: '同上，桌面透明小窗拖拽跟随更跟手', search: 'const SPRING_K = 200;\nconst SPRING_C = 30;', replace: 'const SPRING_K = 800;\nconst SPRING_C = 50;' },
+    { name: 'activity-shared-helper', file: 'runtime/electron-helper/shared-core.js', reason: '鼠标活动判定（2.5s 窗口 + 18~28s 冷却），供待机链主动加动作', search: 'const springStep = (v, x, target, dt, power = DEFAULT_THROW_POWER) =>', replace: '（前置 ACTIVITY_* 常量 / markMouseActivity / activityActionDue）' },
+    { name: 'activity-shared-export', file: 'runtime/electron-helper/shared-core.js', reason: '导出 activityActionDue / markMouseActivity 给 sprite 与 renderer', search: 'exports.springStep = springStep', replace: '（新增两行导出）' },
+    { name: 'activity-sprite-chain', file: 'runtime/electron-helper/sprite.js', reason: '桌面待机链：鼠标在动时强制走「动作」分类', search: 'const k = S.rollKind(roll, animationWeights, { fixed: this.pet.fixedEnabled });', replace: "const k = S.activityActionDue() ? 'action' : S.rollKind(…)" },
+    { name: 'activity-main-ipc', file: 'runtime/electron-helper/main.js', reason: '主进程按全局光标判定鼠标活动，250ms 限流后 IPC 通知窗口', search: 'const point = screen.getCursorScreenPoint();', replace: '（追加活动心跳上报块）' },
+    { name: 'activity-preload-ipc', file: 'runtime/electron-helper/preload.js', reason: '暴露 onMouseActivity(cb) 给渲染端', search: 'onDisplays(cb) {', replace: '（前置 onMouseActivity）' },
+    { name: 'activity-renderer-wire', file: 'runtime/electron-helper/renderer.js', reason: '把主进程活动心跳接到共享逻辑 markMouseActivity', search: 'injectAssets();', replace: '（追加 onMouseActivity 订阅）' },
+    { name: 'activity-client-helper', file: 'lib/client.js', reason: '浏览器 overlay 同款鼠标活动判定（window pointermove）', search: 'const rollKind = (roll, w, opts) => {', replace: '（前置 ACTIVITY_* / activityActionDue）' },
+    { name: 'activity-client-chain', file: 'lib/client.js', reason: '浏览器待机链：鼠标在动时强制走「动作」分类', search: 'const k = rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });', replace: 'const k = activityActionDue() ? "action" : rollKind(…)' },
   ],
   removed: [],
   files,
@@ -232,7 +335,11 @@ const patches = `# 内置上游构建产物（只读）
    \`SPRING_K/SPRING_C\` 由 \`200/30\` 改为 \`800/50\`——稳态滞后从 \`0.15 × 光标速度\` 降到
    \`0.0625 × 光标速度\`（480px/s 拖动实测约 40px → 约 17px），阻尼比 0.88 无可见回弹。
    只影响拖拽跟随，抛掷/反弹/落地摩擦/挤压曲线不变。
-4. 只保留运行所需文件：\`lib/index.js\`、\`lib/client.js\`、\`runtime/\`、\`package.json\`、\`LICENSE\`；
+4. **鼠标活动 → 待机链主动加动作**：鼠标在动（2.5s 内有过移动）时，待机随机链每 18~28 秒
+   **强制**抽一段「动作」分类播放（像在陪着干活）；鼠标静下来就退回原有权重抽签。
+   桌面 helper 的穿透小窗收不到窗外鼠标移动，故由主进程按全局光标判定（250ms 限流）经 IPC
+   通知渲染端；浏览器 overlay 直接监听 \`window pointermove\`。只影响随机链，拖拽/点播/事件动画不变。
+5. 只保留运行所需文件：\`lib/index.js\`、\`lib/client.js\`、\`runtime/\`、\`package.json\`、\`LICENSE\`；
    类型声明与独立模式 CLI 不随适配包发布。
 
 校验值见 \`vendor-manifest.json\`（逐文件 SHA-256）。

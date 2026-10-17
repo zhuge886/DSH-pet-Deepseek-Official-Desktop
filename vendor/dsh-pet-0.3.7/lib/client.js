@@ -36,6 +36,27 @@ const pickWeightedCategory = (categories, facing) => {
 	}
 	return eligible[eligible.length - 1];
 };
+// ---------- [适配] 鼠标活动 → 待机链主动加动作 ----------
+// 用户在动鼠标（在电脑前忙）时，随机链每 18~28 秒强制抽一段「动作」分类；鼠标静下来就退回原权重。
+// 只影响随机链，拖拽/点播/事件动画不变。桌面端由主进程经 IPC 喂 markMouseActivity。
+const ACTIVITY_WINDOW_MS = 2500;
+const ACTIVITY_COOLDOWN_MIN_MS = 18000;
+const ACTIVITY_COOLDOWN_MAX_MS = 28000;
+let lastMouseActivityAt = 0;
+let nextActivityActionAt = 0;
+const markMouseActivity = () => {
+	lastMouseActivityAt = Date.now();
+};
+if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+	window.addEventListener("pointermove", markMouseActivity, { passive: true });
+}
+const activityActionDue = () => {
+	const now = Date.now();
+	if (now - lastMouseActivityAt > ACTIVITY_WINDOW_MS) return false;
+	if (now < nextActivityActionAt) return false;
+	nextActivityActionAt = now + ACTIVITY_COOLDOWN_MIN_MS + Math.random() * (ACTIVITY_COOLDOWN_MAX_MS - ACTIVITY_COOLDOWN_MIN_MS);
+	return true;
+};
 const rollKind = (roll, w, opts) => {
 	const turn = opts?.fixed ? 0 : w.turn;
 	const move = opts?.fixed ? 0 : w.move;
@@ -3351,7 +3372,8 @@ function makePetUI(rt) {
 			const animations = petAnims;
 			const animationWeights = petWeights;
 			const roll = Math.random();
-			const k = rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });
+			// 鼠标在动（用户在用电脑）→ 强制抽一段「动作」分类（节流 18~28 秒）
+			const k = activityActionDue() ? "action" : rollKind(roll, animationWeights, { fixed: cfg.fixedEnabled });
 			let kind;
 			let next;
 			if (k === "idle") {

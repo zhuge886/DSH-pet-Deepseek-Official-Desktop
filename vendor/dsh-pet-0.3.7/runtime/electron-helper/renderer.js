@@ -136,4 +136,8 @@ window.addEventListener('resize', () => {
 });
 
 injectAssets();
+// [适配] 主进程的鼠标活动心跳 → 共享逻辑；待机链据此每 18~28 秒主动加一段动作
+if (window.petBridge && typeof window.petBridge.onMouseActivity === 'function') {
+  window.petBridge.onMouseActivity(() => S.markMouseActivity());
+}
 void boot();

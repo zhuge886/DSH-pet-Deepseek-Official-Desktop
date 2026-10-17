@@ -17,7 +17,11 @@
    `SPRING_K/SPRING_C` 由 `200/30` 改为 `800/50`——稳态滞后从 `0.15 × 光标速度` 降到
    `0.0625 × 光标速度`（480px/s 拖动实测约 40px → 约 17px），阻尼比 0.88 无可见回弹。
    只影响拖拽跟随，抛掷/反弹/落地摩擦/挤压曲线不变。
-4. 只保留运行所需文件：`lib/index.js`、`lib/client.js`、`runtime/`、`package.json`、`LICENSE`；
+4. **鼠标活动 → 待机链主动加动作**：鼠标在动（2.5s 内有过移动）时，待机随机链每 18~28 秒
+   **强制**抽一段「动作」分类播放（像在陪着干活）；鼠标静下来就退回原有权重抽签。
+   桌面 helper 的穿透小窗收不到窗外鼠标移动，故由主进程按全局光标判定（250ms 限流）经 IPC
+   通知渲染端；浏览器 overlay 直接监听 `window pointermove`。只影响随机链，拖拽/点播/事件动画不变。
+5. 只保留运行所需文件：`lib/index.js`、`lib/client.js`、`runtime/`、`package.json`、`LICENSE`；
    类型声明与独立模式 CLI 不随适配包发布。
 
 校验值见 `vendor-manifest.json`（逐文件 SHA-256）。
