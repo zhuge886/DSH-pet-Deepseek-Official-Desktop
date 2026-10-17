@@ -44,19 +44,30 @@ GET http://127.0.0.1:<port>/dsh-pet-desktop/health
 
 返回 `status: active`、`host.kind: desktop`、`upstream.applied: true` 即适配层与上游都已就绪（字段含义见 [DESKTOP.md §3](DESKTOP.md)）。
 
-## 📦 本仓库只保留「适配官方桌面端」所需
+## 📦 仓库结构
 
 ```text
 adapter/                 适配层：宿主识别、运行时诊断、健康检查、失败降级
 cordis.patch.yml         组合包声明（桌面端插件管理据此把它当插件）
 vendor/dsh-pet-0.3.7/    上游已构建产物（免构建，SHA-256 逐文件校验）
 dsh-pet/assets/          运行时素材（webm / 字体 / 表情包 / 默认配置）
+animations/webm/         本仓库额外收录的动作素材（文件名即动作名）
 tests/                   清单、适配层纯逻辑、启动冒烟
 DESKTOP.md               为什么需要、兼容矩阵、排障、版本记录
 scripts/sync-vendor.mjs  上游产物同步与可审计补丁
 ```
 
 **不在本仓库**（都在上游）：`src/` 源码、素材生成链（提示词 + Python 脚本）、HTTP API 文档、生态清单、玩法与配置手册。
+
+## 🎞 额外动作
+
+除了上游自带的 106 段动画，本仓库额外收录的动作放在 [`animations/webm/`](animations/README.md)——目录约定与上游一致（`webm/` 子目录 + **文件名即动作名**，VP9-alpha、640×360）：
+
+| 文件 | 说明 |
+| --- | --- |
+| [`animations/webm/非洲之心.webm`](animations/webm/非洲之心.webm) | 开保险箱、捧起钻石的 10 秒动作（用户自制，已去水印/去音频/抠成透明） |
+
+装法、配置写法与转换参数见 [animations/README.md](animations/README.md)。
 
 ## 🔗 功能、玩法、二次创作 → 去上游
 
@@ -71,4 +82,4 @@ scripts/sync-vendor.mjs  上游产物同步与可审计补丁
 
 ## 版本
 
-当前 `0.3.7-desktop.3`（基于上游 `dsh-pet@0.3.7`）。变更见 [DESKTOP.md §11](DESKTOP.md)。
+当前 `0.3.7-desktop.5`（基于上游 `dsh-pet@0.3.7`）。变更见 [DESKTOP.md §11](DESKTOP.md)。
