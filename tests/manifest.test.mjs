@@ -72,7 +72,20 @@ test('vendor 产物与 manifest 一致，补丁锚点与懒加载改造齐全', 
   assert.ok(lib.includes('async function loadElectronDownloader()'), '缺 @electron/get 懒加载器');
   assert.ok(lib.includes('async function loadZipExtractor()'), '缺 extract-zip 懒加载器');
   assert.ok(lib.includes('const downloadArtifact = await loadElectronDownloader();'), '下载路径未改为懒加载');
-  assert.deepEqual(manifest.patches.map((patch) => patch.name), ['asset-root', 'lazy-download-loaders', 'drop-static-electron-import', 'drop-dynamic-zip-import']);
+  assert.deepEqual(manifest.patches.map((patch) => patch.name), [
+    'asset-root',
+    'lazy-download-loaders',
+    'drop-static-electron-import',
+    'drop-dynamic-zip-import',
+    'drag-follow-stiffness-client',
+    'drag-follow-stiffness-desktop',
+  ]);
+  const springPatchedFiles = ['lib/client.js', 'runtime/electron-helper/shared-core.js'];
+  for (const file of springPatchedFiles) {
+    const source = await readFile(join(vendorDir, file), 'utf8');
+    assert.ok(source.includes('const SPRING_K = 800;'), `${file} 的拖拽跟随刚度未生效`);
+    assert.ok(source.includes('const SPRING_C = 50;'), `${file} 的拖拽跟随阻尼未生效`);
+  }
 });
 
 test('浏览器半边的模块 id 与包名一致', async () => {

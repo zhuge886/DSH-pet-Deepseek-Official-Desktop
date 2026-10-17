@@ -13,7 +13,11 @@
    改成首次真正需要下载时再 `import()`。官方桌面端的插件管理用 `link:` 装本地目录时不会安装
    被链接包的依赖；静态导入会让「缺 @electron/get」在激活阶段直接 ERR_MODULE_NOT_FOUND，
    连浏览器 overlay 一起挂掉。按需加载后只有桌面形态降级，并给出可操作提示。
-3. 只保留运行所需文件：`lib/index.js`、`lib/client.js`、`runtime/`、`package.json`、`LICENSE`；
+3. **拖拽跟手调紧**：`lib/client.js` 与 `runtime/electron-helper/shared-core.js` 的拖拽跟随弹簧
+   `SPRING_K/SPRING_C` 由 `200/30` 改为 `800/50`——稳态滞后从 `0.15 × 光标速度` 降到
+   `0.0625 × 光标速度`（480px/s 拖动实测约 40px → 约 17px），阻尼比 0.88 无可见回弹。
+   只影响拖拽跟随，抛掷/反弹/落地摩擦/挤压曲线不变。
+4. 只保留运行所需文件：`lib/index.js`、`lib/client.js`、`runtime/`、`package.json`、`LICENSE`；
    类型声明与独立模式 CLI 不随适配包发布。
 
 校验值见 `vendor-manifest.json`（逐文件 SHA-256）。

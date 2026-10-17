@@ -33,11 +33,25 @@
       "reason": "解压器改为 loadZipExtractor()，与下载器一起做缺依赖提示",
       "search": "\t\t\tconst { default: extract } = await import(\"@electron-internal/extract-zip\");\n",
       "replace": ""
+    },
+    {
+      "name": "drag-follow-stiffness-client",
+      "file": "lib/client.js",
+      "reason": "拖拽跟随弹簧 200/30 → 800/50：滞后 0.15v → 0.0625v，浏览器 overlay 拖拽更跟手（不改抛掷物理）",
+      "search": "const SPRING_K = 200;\nconst SPRING_C = 30;",
+      "replace": "const SPRING_K = 800;\nconst SPRING_C = 50;"
+    },
+    {
+      "name": "drag-follow-stiffness-desktop",
+      "file": "runtime/electron-helper/shared-core.js",
+      "reason": "同上，桌面透明小窗拖拽跟随更跟手",
+      "search": "const SPRING_K = 200;\nconst SPRING_C = 30;",
+      "replace": "const SPRING_K = 800;\nconst SPRING_C = 50;"
     }
   ],
   "removed": [],
   "files": {
-    "lib/client.js": "80e4b37a5e9d62400176e97cac9efa0ba5af22e33e05d922b427bb1044a00e7b",
+    "lib/client.js": "6119672dbe950855e55a24b0727cf72def1a3292a7f0a07ad6958d6d03ddcfba",
     "lib/index.js": "0887e05bd976fca2639dca652217f5593964839f62b8972098c3f8fc58baa300",
     "LICENSE": "22757dc9c895b2729a2fc684d227cadfb54d5af3dd300029926839e8c4e269ce",
     "package.json": "949e5a2715d77bb63db8b13d22cd8cdfe9d214897debb7d9b1c682f254ddb246",
@@ -52,7 +66,7 @@
     "runtime/electron-helper/pointer-target.js": "a299faccfda23365a22e54ee93147c19874abae6c669fc90b9f4b6c9d3b8c150",
     "runtime/electron-helper/preload.js": "55f9e0166eaff8096d22e291c1589d41dc1e9effa1e35e9b155fd85931cd01ce",
     "runtime/electron-helper/renderer.js": "819aab206d2c7e5d7d88e5b40085e8f092e60f1b168f72ee1f29f27e4291e4c9",
-    "runtime/electron-helper/shared-core.js": "c9c8b555001a8246effa15b80ecb20ba09633e9195b15bc6146272b6f0f77459",
+    "runtime/electron-helper/shared-core.js": "fd7d3eb11ceef28e7e5c52b9748c1422604bb964a0a2340b45fe3962fc976f3a",
     "runtime/electron-helper/sprite.js": "c26741a10277ad741587f933eaea692a7b8bffa2c65357a255569c39ac48ad19",
     "runtime/electron-helper/topmost-watchdog.js": "4585dafb6527e06307092d569c806d5a1372754415c5abc5da38c1571a869e09"
   }

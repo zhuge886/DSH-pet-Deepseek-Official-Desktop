@@ -944,8 +944,8 @@ function mountChatDialog(opts) {
 
 //#endregion
 //#region src/shared/physics.ts
-const SPRING_K = 200;
-const SPRING_C = 30;
+const SPRING_K = 800;
+const SPRING_C = 50;
 const TRAIL_KEEP_MS = 200;
 const RELEASE_WINDOW_MS = 150;
 const RELEASE_STALE_MS = 150;

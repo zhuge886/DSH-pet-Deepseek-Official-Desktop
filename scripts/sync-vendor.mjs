@@ -105,6 +105,23 @@ function applyPatch(name, search, replace) {
   lib = lib.replace(search, replace);
 }
 
+/**
+ * 对 `lib/` 之外的文件（如 runtime 的共享纯逻辑）应用一处锚点补丁。
+ * @param name - 补丁名（写进 vendor-manifest.json）。
+ * @param file - 相对 vendor 根的路径。
+ * @param search - 原文锚点。
+ * @param replace - 替换文本。
+ */
+async function applyFilePatch(name, file, search, replace) {
+  const target = join(staging, file);
+  const source = await readFile(target, 'utf8');
+  const occurrences = source.split(search).length - 1;
+  if (occurrences !== 1) {
+    throw new Error(`补丁 ${name}(${file}) 的锚点数量为 ${occurrences}（预期 1），上游产物可能变了，请人工复核`);
+  }
+  await writeFile(target, source.replace(search, replace), 'utf8');
+}
+
 const assetSearch = 'const PACKAGE_ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));';
 const assetReplace = 'const PACKAGE_ROOT = resolve(fileURLToPath(new URL("../../../dsh-pet/", import.meta.url)));';
 applyPatch('asset-root', assetSearch, assetReplace);
@@ -146,6 +163,22 @@ applyPatch('lazy-download-call', trySearch, tryReplace);
 applyPatch('drop-static-electron-import', 'import { downloadArtifact } from "@electron/get";\n', '');
 applyPatch('drop-dynamic-zip-import', '\t\t\tconst { default: extract } = await import("@electron-internal/extract-zip");\n', '');
 
+// ---------- 拖拽跟手（适配版手感优化） ----------
+// 上游拖拽跟随弹簧 SPRING_K=200 / SPRING_C=30：稳态滞后 = v × C/K = 0.15 × 光标速度。
+// 实测桌面小窗 480px/s 拖动滞后 ~40px（≈80ms）；快速甩动到 1200px/s 时滞后近 180px，
+// 观感就是「窗口在拖住宠物」「拖到应用外面过一会儿才跟过来」。
+// 改成 800/50 → 滞后 0.0625 × v（快 2.4 倍），阻尼比 0.88（原 1.06，仍无可见回弹）；
+// 只动拖拽跟随这一条弹簧，抛掷速度/重力/反弹/落地摩擦/挤压曲线全部不变。
+const springSearch = 'const SPRING_K = 200;\nconst SPRING_C = 30;';
+const springReplace = 'const SPRING_K = 800;\nconst SPRING_C = 50;';
+await applyFilePatch('drag-follow-stiffness-client', 'lib/client.js', springSearch, springReplace);
+await applyFilePatch(
+  'drag-follow-stiffness-desktop',
+  'runtime/electron-helper/shared-core.js',
+  springSearch,
+  springReplace,
+);
+
 await writeFile(libPath, lib, 'utf8');
 
 const resolvedAssetRoot = resolve(dirname(libPath), '../../../dsh-pet');
@@ -172,6 +205,8 @@ const manifest = {
     { name: 'lazy-download-loaders', file: 'lib/index.js', reason: 'Electron 下载依赖改为按需加载', search: 'async function ensureElectronDownload(options = {}) {', replace: '（前置 loadElectronDownloader / loadZipExtractor）' },
     { name: 'drop-static-electron-import', file: 'lib/index.js', reason: '顶层 @electron/get import 会让 link: 安装缺依赖时整个插件激活失败', search: 'import { downloadArtifact } from "@electron/get";\n', replace: '' },
     { name: 'drop-dynamic-zip-import', file: 'lib/index.js', reason: '解压器改为 loadZipExtractor()，与下载器一起做缺依赖提示', search: '\t\t\tconst { default: extract } = await import("@electron-internal/extract-zip");\n', replace: '' },
+    { name: 'drag-follow-stiffness-client', file: 'lib/client.js', reason: '拖拽跟随弹簧 200/30 → 800/50：滞后 0.15v → 0.0625v，浏览器 overlay 拖拽更跟手（不改抛掷物理）', search: 'const SPRING_K = 200;\nconst SPRING_C = 30;', replace: 'const SPRING_K = 800;\nconst SPRING_C = 50;' },
+    { name: 'drag-follow-stiffness-desktop', file: 'runtime/electron-helper/shared-core.js', reason: '同上，桌面透明小窗拖拽跟随更跟手', search: 'const SPRING_K = 200;\nconst SPRING_C = 30;', replace: 'const SPRING_K = 800;\nconst SPRING_C = 50;' },
   ],
   removed: [],
   files,
@@ -193,7 +228,11 @@ const patches = `# 内置上游构建产物（只读）
    改成首次真正需要下载时再 \`import()\`。官方桌面端的插件管理用 \`link:\` 装本地目录时不会安装
    被链接包的依赖；静态导入会让「缺 @electron/get」在激活阶段直接 ERR_MODULE_NOT_FOUND，
    连浏览器 overlay 一起挂掉。按需加载后只有桌面形态降级，并给出可操作提示。
-3. 只保留运行所需文件：\`lib/index.js\`、\`lib/client.js\`、\`runtime/\`、\`package.json\`、\`LICENSE\`；
+3. **拖拽跟手调紧**：\`lib/client.js\` 与 \`runtime/electron-helper/shared-core.js\` 的拖拽跟随弹簧
+   \`SPRING_K/SPRING_C\` 由 \`200/30\` 改为 \`800/50\`——稳态滞后从 \`0.15 × 光标速度\` 降到
+   \`0.0625 × 光标速度\`（480px/s 拖动实测约 40px → 约 17px），阻尼比 0.88 无可见回弹。
+   只影响拖拽跟随，抛掷/反弹/落地摩擦/挤压曲线不变。
+4. 只保留运行所需文件：\`lib/index.js\`、\`lib/client.js\`、\`runtime/\`、\`package.json\`、\`LICENSE\`；
    类型声明与独立模式 CLI 不随适配包发布。
 
 校验值见 \`vendor-manifest.json\`（逐文件 SHA-256）。
