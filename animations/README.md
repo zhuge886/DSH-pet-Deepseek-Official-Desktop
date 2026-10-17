@@ -58,23 +58,28 @@ animations/
 
 ```sh
 ffmpeg -i 源.mp4 -an \
-  -vf "delogo=水印区域,scale=640:360:flags=lanczos,format=rgba,\
-geq=r='r(X,Y)':g='min(g(X,Y),max(r(X,Y),b(X,Y)))':b='b(X,Y)':a='if(lt(X,290)*lt(Y,118),0,if(lt(0.299*r(X,Y)+0.587*g(X,Y)+0.114*b(X,Y),95),255,clip(255*(1-(g(X,Y)-max(r(X,Y),b(X,Y))-2)/14),0,255)))',\
+  -vf "delogo=右下水印区:enable='between(t,0.2,3.6)+between(t,8.2,10)',\
+drawbox=左上的水印区:color=0x86A882@1:t=fill:enable='between(t,3.6,8.2)',\
+scale=640:360:flags=lanczos,format=rgba,\
+geq=r='r(X,Y)':g='min(g(X,Y),max(r(X,Y),b(X,Y)))':b='b(X,Y)':a='if(lt(0.299*r(X,Y)+0.587*g(X,Y)+0.114*b(X,Y),95),255,clip(255*(1-(g(X,Y)-max(r(X,Y),b(X,Y))-2)/14),0,255))',\
 format=yuva420p" \
   -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 0 -crf 30 -auto-alt-ref 0 -row-mt 1 目标.webm
 ```
 
-这套参数是踩过坑的版本（首版边缘发绿、保险箱门缝被抠穿）：
+这套参数是踩过坑的版本（首版边缘发绿、第二版在角色头边切出一块矩形缺口）：
 
 | 处理 | 作用 |
 | --- | --- |
 | `d = g - max(r,b)` 软阈值：`d ≥ 16` 全透明、`d ≤ 2` 不透明 | 绿幕（灰绿渐变）抠掉；阈值比"6/24"更狠，边缘残绿基本消失 |
 | `g' = min(g, max(r,b))`（在 geq 里做） | 去绿色反光/绿边（despill），比 `despill` 滤镜安全 |
 | 暗部保护：`luma < 95` 强制不透明 | 保住保险箱的暗色反光、门缝、金色描边的过渡像素，不被抠成洞 |
-| 左上角固定清空：`x<290 且 y<118` 时 alpha=0 | 水印残留（`delogo` 插值后仍有极淡残影）直接清成透明 |
-| `delogo=...:enable='between(t,a,b)'` | 水印会在画面上移动，按时间段分两处修 |
+| 左下水印用 **`drawbox` 涂绿**（只在该水印出现的时间段） | 涂成绿幕色后会被抠像一起抠掉，不留残影 |
+| 右下水印用 `delogo=...:enable='between(t,a,b)'` | 水印会在画面上移动，按时间段分两处修 |
+
+> ⚠️ **不要用大范围的 alpha 坐标清零**（例如 `a='if(lt(X,290)*lt(Y,118),0,...)'`）。那是在 640×360 画面上挖掉一整块 290×118，角色的头/呆毛一旦进入这块区域就会被**切成矩形缺口**——第二版就是这么翻车的。要清残影就用 `drawbox` 涂绿，或者把清零矩形限制到水印真实范围（远小于角色活动区）。
 
 - 绿幕不是纯绿时，用上面这条「绿色优势」算 alpha，比 `chromakey` 干净；
 - **不要用 `despill` 滤镜**：它会让整条链丢掉 alpha（实测）；
 - `-auto-alt-ref 0` 是 VP9 alpha 的必要条件；
-- 验证：`ffmpeg -c:v libvpx-vp9 -ss 5 -i 目标.webm -frames:v 1 out.png`，PNG 带 alpha 才是对的（原生 vp9 解码器不读 alpha）。
+- 验证：`ffmpeg -c:v libvpx-vp9 -ss 5 -i 目标.webm -frames:v 1 out.png`，PNG 带 alpha 才是对的（原生 vp9 解码器不读 alpha）；
+- 验 enable 时间窗时，`-ss` 一定要放在 `-i` **后面**（放前面会让滤镜里的 `t` 从 0 重新计时，时间窗全部失效）。
