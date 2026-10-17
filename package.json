@@ -13,13 +13,13 @@
     "pet",
     "cordis"
   ],
-  "homepage": "https://github.com/PC2005-cloud/dsh-pet#readme",
+  "homepage": "https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PC2005-cloud/dsh-pet.git"
+    "url": "git+https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop.git"
   },
   "bugs": {
-    "url": "https://github.com/PC2005-cloud/dsh-pet/issues"
+    "url": "https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop/issues"
   },
   "license": "MIT",
   "type": "module",

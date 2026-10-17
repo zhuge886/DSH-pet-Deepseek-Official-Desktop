@@ -32,16 +32,16 @@ AI 生成动画的配方     源视频 → 透明动画的管线    运行在 DS
 
 ### 🪟 官方桌面端（Electron 版）
 
-本仓库根现在就是一个**可直接安装的官方桌面端适配包**（免构建，详见 [DESKTOP.md](DESKTOP.md)）：
+本仓库（[zhuge886/DSH-pet-Deepseek-Official-Desktop](https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop)）是上游 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的**官方桌面端适配发行版**：仓库根即可直接安装的插件包（免构建，详见 [DESKTOP.md](DESKTOP.md)）。
 
 1. 桌面应用 → **插件管理 → 添加插件**；
 2. 输入本仓库地址：
 
    ```text
-   https://github.com/PC2005-cloud/dsh-pet
+   https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop
    ```
 
-   （等价 pnpm spec：`github:PC2005-cloud/dsh-pet`）
+   （等价 pnpm spec：`github:zhuge886/DSH-pet-Deepseek-Official-Desktop`）
 3. 安装完成后**启用** `dsh-pet` 组合包，重开桌面应用。
 
 > 也可以继续装 npm 原版：在安装框里填 `dsh-pet`（发布版 0.3.7），或使用桌面应用自带的 CLI。两者包名相同，**不要同时安装**。
@@ -74,7 +74,7 @@ dsh plugin --profile web add dsh-pet
 
 ```sh
 # ① clone 本仓库，进入插件目录
-git clone https://github.com/PC2005-cloud/dsh-pet.git
+git clone https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop.git
 cd dsh-pet/dsh-pet
 
 # ② 安装依赖

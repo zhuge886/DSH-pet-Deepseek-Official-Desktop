@@ -39,10 +39,10 @@
 2. 安装源选 **Git 仓库**（或直接把下面整段填进输入框）：
 
    ```text
-   https://github.com/PC2005-cloud/dsh-pet
+   https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop
    ```
 
-   等价的 pnpm spec：`github:PC2005-cloud/dsh-pet`。
+   等价的 pnpm spec：`github:zhuge886/DSH-pet-Deepseek-Official-Desktop`。
 3. 安装完成后在插件列表里**启用** `dsh-pet` 组合包；
 4. 重开桌面应用（宿主半边的改动需要重启，浏览器半边刷新即可）。
 
@@ -51,7 +51,9 @@
 ### `dsh web` / 终端
 
 ```sh
-dsh plugin --profile web add github:PC2005-cloud/dsh-pet
+dsh plugin --profile web add github:zhuge886/DSH-pet-Deepseek-Official-Desktop
+# 官方桌面应用使用 desktop profile 时：
+dsh plugin --profile desktop add github:zhuge886/DSH-pet-Deepseek-Official-Desktop
 ```
 
 ### 本地目录（开发）
