@@ -58,10 +58,23 @@ animations/
 
 ```sh
 ffmpeg -i 源.mp4 -an \
-  -vf "delogo=...,scale=640:360:flags=lanczos,format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='clip(255*(1-(g(X,Y)-max(r(X,Y),b(X,Y))-6)/24),0,255)',format=yuva420p" \
+  -vf "delogo=水印区域,scale=640:360:flags=lanczos,format=rgba,\
+geq=r='r(X,Y)':g='min(g(X,Y),max(r(X,Y),b(X,Y)))':b='b(X,Y)':a='if(lt(X,290)*lt(Y,118),0,if(lt(0.299*r(X,Y)+0.587*g(X,Y)+0.114*b(X,Y),95),255,clip(255*(1-(g(X,Y)-max(r(X,Y),b(X,Y))-2)/14),0,255)))',\
+format=yuva420p" \
   -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 0 -crf 30 -auto-alt-ref 0 -row-mt 1 目标.webm
 ```
 
+这套参数是踩过坑的版本（首版边缘发绿、保险箱门缝被抠穿）：
+
+| 处理 | 作用 |
+| --- | --- |
+| `d = g - max(r,b)` 软阈值：`d ≥ 16` 全透明、`d ≤ 2` 不透明 | 绿幕（灰绿渐变）抠掉；阈值比"6/24"更狠，边缘残绿基本消失 |
+| `g' = min(g, max(r,b))`（在 geq 里做） | 去绿色反光/绿边（despill），比 `despill` 滤镜安全 |
+| 暗部保护：`luma < 95` 强制不透明 | 保住保险箱的暗色反光、门缝、金色描边的过渡像素，不被抠成洞 |
+| 左上角固定清空：`x<290 且 y<118` 时 alpha=0 | 水印残留（`delogo` 插值后仍有极淡残影）直接清成透明 |
+| `delogo=...:enable='between(t,a,b)'` | 水印会在画面上移动，按时间段分两处修 |
+
 - 绿幕不是纯绿时，用上面这条「绿色优势」算 alpha，比 `chromakey` 干净；
 - **不要用 `despill` 滤镜**：它会让整条链丢掉 alpha（实测）；
-- `-auto-alt-ref 0` 是 VP9 alpha 的必要条件。
+- `-auto-alt-ref 0` 是 VP9 alpha 的必要条件；
+- 验证：`ffmpeg -c:v libvpx-vp9 -ss 5 -i 目标.webm -frames:v 1 out.png`，PNG 带 alpha 才是对的（原生 vp9 解码器不读 alpha）。
