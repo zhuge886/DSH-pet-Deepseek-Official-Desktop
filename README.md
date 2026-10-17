@@ -28,9 +28,7 @@ AI 生成动画的配方     源视频 → 透明动画的管线    运行在 DS
 
 ## 快速开始（安装插件）
 
-装法取决于你在用哪个 DSH：
-
-### 🪟 官方桌面端（Electron 版）
+### 🪟 官方桌面端适配安装（Electron 版）
 
 本仓库（[zhuge886/DSH-pet-Deepseek-Official-Desktop](https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop)）是上游 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的**官方桌面端适配发行版**：仓库根即可直接安装的插件包（免构建，详见 [DESKTOP.md](DESKTOP.md)）。
 
@@ -44,52 +42,7 @@ AI 生成动画的配方     源视频 → 透明动画的管线    运行在 DS
    （等价 pnpm spec：`github:zhuge886/DSH-pet-Deepseek-Official-Desktop`）
 3. 安装完成后**启用** `dsh-pet` 组合包，重开桌面应用。
 
-> 也可以继续装 npm 原版：在安装框里填 `dsh-pet`（发布版 0.3.7），或使用桌面应用自带的 CLI。两者包名相同，**不要同时安装**。
->
 > 为什么需要适配包：仓库根原本没有 `package.json`，插件本体在 `dsh-pet/` 子目录且 `lib/` 不入库，桌面端会报「这个包没有声明组合包」（上游 issue #103）。适配包把根目录声明成 bundle，内置上游已构建产物，并补上 `0.2.1-rc.1` 兼容声明与健康检查。
-
-### 🌐 `dsh web`
-
-> 以下命令都在你的**命令行终端**（PowerShell / CMD 等）中运行。前提是 DSH 环境已就绪：
-
-```sh
-# ① 前置要求：确认 Node.js 已安装
-node -v
-
-# ② 安装 DSH 启动器与 pnpm（已装可跳过；装完请重新打开终端）
-npm install -g @deepseek-ai/dsh pnpm
-dsh --version   # 验证 dsh 命令可用
-
-# ③ 安装本插件（web 模式用 --profile web）
-dsh plugin --profile web add dsh-pet
-```
-
-装完**重开桌面应用**（`dsh web` 用户则重启 `dsh web`）才生效——运行中的进程持有内存里的旧插件。宠物出现在界面右上角（默认配置角落，可在设置页修改）。
-
-> **兼容性**：上游 0.3.7 在 dsh **`0.2.0-rc.2`** 下开发并测试；本适配包额外声明并验证了官方桌面端 **`0.2.1-rc.1`**（见 [DESKTOP.md](DESKTOP.md)）。`dsh --version` 可查看你的版本。
-
-### 从源码安装（clone 本仓库后）
-
-`lib/` 构建产物不入库，clone 后需要先构建再安装：
-
-```sh
-# ① clone 本仓库，进入插件目录
-git clone https://github.com/zhuge886/DSH-pet-Deepseek-Official-Desktop.git
-cd dsh-pet/dsh-pet
-
-# ② 安装依赖
-npm install
-
-# ③ 构建（完整 lib：tsdown → lib + 桌面共享核心 + 类型声明）
-npm run build       # 必须手动跑一次（克隆后 npm install 不再自动构建）
-
-# ④ 安装到 DSH（file: 指向**插件目录**——上面 cd 进去的那一层，用构建好的 lib）
-#    --profile 填实际在用的那个：dsh web → web；
-#    桌面应用（Electron 版）改用应用内「插件管理」安装，见上方快速开始
-dsh plugin --profile web add file:D:/path/to/dsh-pet/dsh-pet
-```
-
-> 注：`npm run build`（即 `scripts/prepare.js`）才产出**完整可安装**的 lib——除 tsdown 构建外还构建桌面共享核心（`shared-core.js`）、生成类型声明并收敛发布 `files` 清单；裸 `tsdown` 构建会缺桌面运行时与类型。发布与打包（`npm publish` / `npm pack`）时由 `prepack` 自动调用它，克隆仓库后需手动跑一次。
 
 ## 💬 反馈与发版节奏
 
