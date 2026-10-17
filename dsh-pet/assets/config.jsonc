@@ -183,7 +183,11 @@
       // 余额/碎碎念/工作状态事件动画、点击回应与拖拽一律照常——用户主动触发的不受此限制。
       // 设置页有同名勾选框。改动后刷新或重启生效。
       "fixedEnabled": false,
-      "display": "both",
+      // 本适配发行版默认只显示「窗口外」那只透明置顶小窗（display: desktop）。
+      // 桌面应用里 both 会同时渲染应用内 overlay + 窗口外小窗（两只、彼此独立、位置不同步），
+      // 而应用内那只受窗口边界限制拖不出去——所以默认只留窗口外那只。
+      // 四档都可用：web=仅应用内 / desktop=仅窗口外 / both=两只 / none=不显示。
+      "display": "desktop",
       "position": {
         "corner": "top-right",
         "marginX": 24,

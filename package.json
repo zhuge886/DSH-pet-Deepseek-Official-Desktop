@@ -1,8 +1,8 @@
 {
   "name": "dsh-pet",
-  "version": "0.3.7-desktop.2",
-  "description": "吃白饭的蓝色大肥鱼，赖在 DeepSeek Harness 里不走了。本包是 dsh-pet 的【官方桌面端适配发行版】（zhuge886 基于上游 dsh-pet 的原创二创）：仓库根即插件包，免构建、可在桌面应用「插件管理」里从本仓库直接安装。",
-  "author": "zhuge886 (https://github.com/zhuge886)",
+  "version": "0.3.7-desktop.3",
+  "description": "吃白饭的蓝色大肥鱼，赖在 DeepSeek Harness 里不走了。本包是 dsh-pet 的【官方桌面端适配发行版】（基于上游 dsh-pet 的二次创作，非原创）：仓库根即插件包，免构建、可在桌面应用「插件管理」里从本仓库直接安装。",
+  "author": "zhuge886 (desktop adaptation only; upstream dsh-pet by PC2005-cloud)",
   "contributors": [
     "PC2005-cloud (https://github.com/PC2005-cloud)"
   ],

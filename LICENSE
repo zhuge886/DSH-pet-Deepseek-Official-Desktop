@@ -1,7 +1,7 @@
 MIT License
 
 Copyright (c) 2026 PC2005-cloud
-Copyright (c) 2026 zhuge886 (derivative work based on dsh-pet — official desktop adapter: adapter/, scripts/sync-vendor.mjs, DESKTOP.md, tests/)
+Copyright (c) 2026 zhuge886 (only the desktop-adaptation changes: adapter/, scripts/sync-vendor.mjs, DESKTOP.md, tests/; upstream dsh-pet remains PC2005-cloud's)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

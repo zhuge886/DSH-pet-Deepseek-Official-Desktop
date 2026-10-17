@@ -1,6 +1,6 @@
 # 官方桌面端适配包（包名仍是 `dsh-pet`）
 
-> **📌 原创与二创声明**：本适配包是 **zhuge886 基于上游 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（作者 PC2005-cloud，MIT）的原创二创**——适配层 `adapter/`、根 `package.json` + `cordis.patch.yml`、`vendor/` 同步与校验、本文档与 `tests/` 均为 zhuge886 原创实现，上游署名完整保留。详见 [README.md](README.md) 的「📌 原创与二创声明」。
+> **📌 非原创声明**：本仓库**不是原创作品**，是 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（作者 **PC2005-cloud**，MIT）的**二次创作**——只增加「让上游插件在 DeepSeek Harness 官方桌面端装上、可管理」的适配层、组合包声明、同步校验、文档与测试；桌宠本体、素材与全部玩法归上游作者。详见 [README.md](README.md) 的「📌 非原创声明」。
 
 本仓库根目录现在是一个**可直接安装的 DSH 组合包（bundle）**，专门解决「dsh-pet 在 DeepSeek Harness 官方桌面端（Electron 版）装不上/装完不可管理」的问题（对应上游 issue #103）：
 
@@ -177,7 +177,7 @@ npm run sync:upstream -- --version 0.3.8
 >
 > 本包面向「从 Git 安装」，**不要 `npm publish`**——`dsh-pet` 这个包名属于上游 npm 包，发布会被拒绝或覆盖语义。
 
-**注意**：`dsh-pet/src/` 与仓库里的运行时/配置是上游 **main 分支**的最新源码，可能比 `vendor` 里的发布版新（例如字体字号）。适配包优先保证「装得上、跑得稳」，要带上 main 的新特性需要按上游 `npm run build` 重新构建后替换 `vendor` 内容（或等上游发版后重跑 `sync:upstream`）。
+**注意**：本仓库**不含上游源码**（`src/`、素材生成链、提示词都在上游仓库），`vendor/` 固定为 npm 发布版 0.3.7。要带上游 `main` 分支的新特性，需在上游仓库 `npm run build` 后替换 `vendor/` 内容（或等上游发版后重跑 `sync:upstream`）。
 
 ---
 
@@ -250,6 +250,12 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@electron/get' imported from
 
 ## 11. 版本记录
 
+**`0.3.7-desktop.3`**（2026-10-17）
+
+- 默认只显示**一只**：打包默认配置的 `pets[0].display` 由 `both` 改为 `desktop`（仅窗口外透明小窗）。四档仍在、能力不变，设置页或配置文件随时可切回 `web` / `both`。
+- 仓库收窄到「只做官方桌面端适配」：移除上游的素材生成链、提示词、API 文档、生态清单、源码与开发工具，相关文档一律指向上游 [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)。
+- 文案改为**非原创声明**：本仓库是上游的二次创作，不主张任何原创性。
+
 **`0.3.7-desktop.2`**（2026-10-17）
 
 - 拖拽跟手补丁：`SPRING_K/SPRING_C` 200/30 → 800/50（`lib/client.js` + 桌面共享逻辑），稳态滞后 `0.15×光标速度` → `0.0625×光标速度`；只影响拖拽跟随，抛掷/反弹/摩擦/挤压不变。
@@ -267,12 +273,12 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@electron/get' imported from
 
 | display | 渲染位置 | 能否拖出应用窗口 |
 | --- | --- | --- |
+| `desktop`（**本发行版默认**） | 仅窗口外透明置顶小窗 | 可以，还能盖在应用窗口上方 |
 | `both`（上游默认） | 应用内 overlay + 窗口外透明小窗，**各一只** | 窗口外那只可以；应用内那只不行 |
-| `desktop` | 仅窗口外透明置顶小窗 | 可以，还能盖在应用窗口上方 |
 | `web` | 仅应用内（网页 DOM） | 不能——DOM 元素出不了窗口 |
 | `none` | 不显示 | — |
 
-两只彼此**独立**：位置、动作、拖拽都不同步（同一份配置、两个渲染端），所以同时开 `both` 看起来像"两个宠物"。
+两只彼此**独立**：位置、动作、拖拽都不同步（同一份配置、两个渲染端），所以同时开 `both` 看起来像"两个宠物"。本发行版默认 `desktop`，只出现一只。
 
 改法（改完**重启桌面应用**生效——client 半边只在页面加载时读一次配置）：
 
